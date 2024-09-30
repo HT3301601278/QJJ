@@ -18,6 +18,8 @@ class _DataManagementPageState extends State<DataManagementPage> {
   DateTime _endDate = DateTime.now();
   List<Map<String, dynamic>> _data = [];
   bool _isLoading = false;
+  int _currentPage = 0;
+  int _totalPages = 1;
 
   @override
   void initState() {
@@ -63,14 +65,20 @@ class _DataManagementPageState extends State<DataManagementPage> {
     });
 
     try {
-      final response = await http.get(Uri.parse(
-          'http://10.0.2.2:8080/api/devices/$_selectedDevice/data?page=0&size=10&startTime=${_startDate.toIso8601String()}&endTime=${_endDate.toIso8601String()}'));
+      String formattedStartDate = "${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')} 00:00:00";
+      String formattedEndDate = "${_endDate.year}-${_endDate.month.toString().padLeft(2, '0')}-${_endDate.day.toString().padLeft(2, '0')} 23:59:59";
+      
+      String url = 'http://10.0.2.2:8080/api/devices/$_selectedDevice/data?page=$_currentPage&size=10&startTime=$formattedStartDate&endTime=$formattedEndDate';
+      print('查询链接: $url');
+
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
         if (responseData.containsKey('content') && responseData['content'] is List) {
           final List<dynamic> dataJson = responseData['content'];
           setState(() {
             _data = dataJson.cast<Map<String, dynamic>>();
+            _totalPages = responseData['totalPages'] ?? 1;
             _isLoading = false;
           });
         } else {
@@ -143,6 +151,7 @@ class _DataManagementPageState extends State<DataManagementPage> {
         Expanded(
           child: _buildDataTable(),
         ),
+        _buildPaginationControls(),
         ElevatedButton(
           onPressed: () {
             // TODO: 实现导出功能
@@ -277,6 +286,33 @@ class _DataManagementPageState extends State<DataManagementPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(Icons.chevron_left),
+          onPressed: _currentPage > 0 ? () {
+            setState(() {
+              _currentPage--;
+            });
+            _fetchData();
+          } : null,
+        ),
+        Text('${_currentPage + 1} / $_totalPages'),
+        IconButton(
+          icon: Icon(Icons.chevron_right),
+          onPressed: _currentPage < _totalPages - 1 ? () {
+            setState(() {
+              _currentPage++;
+            });
+            _fetchData();
+          } : null,
+        ),
+      ],
     );
   }
 }
