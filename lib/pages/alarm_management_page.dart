@@ -28,7 +28,7 @@ class _AlarmManagementPageState extends State<AlarmManagementPage> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/devices'));
+      final response = await http.get(Uri.parse('http://192.168.193.98:8080/api/devices'));
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(utf8.decode(response.bodyBytes));
         if (responseData.containsKey('content') && responseData['content'] is List) {
@@ -65,7 +65,7 @@ class _AlarmManagementPageState extends State<AlarmManagementPage> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/devices/$_selectedDevice/data/above-threshold'));
+      final response = await http.get(Uri.parse('http://192.168.193.98:8080/api/devices/$_selectedDevice/data/above-threshold'));
       if (response.statusCode == 200) {
         final List<dynamic> alarmsJson = json.decode(utf8.decode(response.bodyBytes));
         setState(() {
