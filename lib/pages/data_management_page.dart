@@ -103,11 +103,11 @@ class _DataManagementPageState extends State<DataManagementPage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('数据管理'),
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: '实时数据'),
-              Tab(text: '历史数据'),
-              Tab(text: '数据可视化'),
+              Tab(icon: Icon(Icons.update), text: '实时数据'),
+              Tab(icon: Icon(Icons.history), text: '历史数据'),
+              Tab(icon: Icon(Icons.show_chart), text: '数据可视化'),
             ],
           ),
         ),
@@ -123,103 +123,154 @@ class _DataManagementPageState extends State<DataManagementPage> {
   }
 
   Widget _buildRealTimeDataTab() {
-    return Column(
-      children: [
-        _buildDeviceSelector(),
-        Expanded(
-          child: _buildDataTable(),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDeviceSelector(),
+          SizedBox(height: 16),
+          Expanded(
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildDataTable(),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildHistoricalDataTab() {
-    return Column(
-      children: [
-        _buildDeviceSelector(),
-        _buildDateRangePicker(),
-        Expanded(
-          child: _buildDataTable(),
-        ),
-        _buildPaginationControls(),
-        ElevatedButton(
-          onPressed: () {
-            // TODO: 实现导出功能
-          },
-          child: const Text('导出数据'),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDeviceSelector(),
+          SizedBox(height: 16),
+          _buildDateRangePicker(),
+          SizedBox(height: 16),
+          Expanded(
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Expanded(child: _buildDataTable()),
+                    _buildPaginationControls(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildDataVisualizationTab() {
-    return Column(
-      children: [
-        _buildDeviceSelector(),
-        _buildDateRangePicker(),
-        _buildChartTypeSelector(),
-        Expanded(
-          child: _buildChart(),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDeviceSelector(),
+          SizedBox(height: 16),
+          _buildDateRangePicker(),
+          SizedBox(height: 16),
+          _buildChartTypeSelector(),
+          SizedBox(height: 16),
+          Expanded(
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildChart(),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildDeviceSelector() {
-    return DropdownButton<String>(
-      value: _selectedDevice,
-      onChanged: (String? newValue) {
-        setState(() {
-          _selectedDevice = newValue!;
-        });
-        _fetchData();
-      },
-      items: _devices.map<DropdownMenuItem<String>>((Map<String, dynamic> device) {
-        return DropdownMenuItem<String>(
-          value: device['id'].toString(),
-          child: Text(device['name'] ?? '未知设备'),
-        );
-      }).toList(),
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _selectedDevice,
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedDevice = newValue!;
+              });
+              _fetchData();
+            },
+            items: _devices.map<DropdownMenuItem<String>>((Map<String, dynamic> device) {
+              return DropdownMenuItem<String>(
+                value: device['id'].toString(),
+                child: Text(device['name'] ?? '未知设备'),
+              );
+            }).toList(),
+            isExpanded: true,
+            hint: Text('选择设备'),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildDateRangePicker() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        TextButton(
-          onPressed: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: _startDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime.now(),
-            );
-            if (picked != null) {
-              setState(() {
-                _startDate = picked;
-              });
-            }
-          },
-          child: Text('开始日期: ${_startDate.toString().substring(0, 10)}'),
+        Expanded(
+          child: _buildDatePicker('开始日期', _startDate, (date) => setState(() => _startDate = date)),
         ),
-        TextButton(
-          onPressed: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: _endDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime.now(),
-            );
-            if (picked != null) {
-              setState(() {
-                _endDate = picked;
-              });
-            }
-          },
-          child: Text('结束日期: ${_endDate.toString().substring(0, 10)}'),
+        SizedBox(width: 16),
+        Expanded(
+          child: _buildDatePicker('结束日期', _endDate, (date) => setState(() => _endDate = date)),
         ),
       ],
+    );
+  }
+
+  Widget _buildDatePicker(String label, DateTime selectedDate, Function(DateTime) onChanged) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: () async {
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: selectedDate,
+            firstDate: DateTime(2000),
+            lastDate: DateTime.now(),
+          );
+          if (picked != null) {
+            onChanged(picked);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 12, color: Colors.grey)),
+              SizedBox(height: 4),
+              Text(
+                '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -231,15 +282,27 @@ class _DataManagementPageState extends State<DataManagementPage> {
   Widget _buildDataTable() {
     return _isLoading
         ? Center(child: CircularProgressIndicator())
-        : ListView.builder(
-            itemCount: _data.length,
-            itemBuilder: (context, index) {
-              final item = _data[index];
-              return ListTile(
-                title: Text('值: ${item['value']}'),
-                subtitle: Text('时间: ${DateTime.fromMillisecondsSinceEpoch(item['recordTime']).toString()}'),
-              );
-            },
+        : Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text('数据列表', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _data.length,
+                  itemBuilder: (context, index) {
+                    final item = _data[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text('值: ${item['value']}'),
+                        subtitle: Text('时间: ${DateTime.fromMillisecondsSinceEpoch(item['recordTime']).toString()}'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
   }
 
@@ -255,27 +318,40 @@ class _DataManagementPageState extends State<DataManagementPage> {
       );
     }).toList();
 
-    return LineChart(
-      LineChartData(
-        gridData: const FlGridData(show: false),
-        titlesData: const FlTitlesData(show: false),
-        borderData: FlBorderData(show: true),
-        minX: 0,
-        maxX: spots.length.toDouble() - 1,
-        minY: spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b),
-        maxY: spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b),
-        lineBarsData: [
-          LineChartBarData(
-            spots: spots,
-            isCurved: true,
-            color: Colors.blue,
-            barWidth: 3,
-            isStrokeCapRound: true,
-            dotData: FlDotData(show: false),
-            belowBarData: BarAreaData(show: false),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Text('数据趋势图', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        ),
+        Expanded(
+          child: LineChart(
+            LineChartData(
+              gridData: FlGridData(show: true, drawVerticalLine: true),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
+                bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
+              ),
+              borderData: FlBorderData(show: true),
+              minX: 0,
+              maxX: spots.length.toDouble() - 1,
+              minY: spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b),
+              maxY: spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  color: Colors.blue,
+                  barWidth: 3,
+                  isStrokeCapRound: true,
+                  dotData: FlDotData(show: false),
+                  belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.3)),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

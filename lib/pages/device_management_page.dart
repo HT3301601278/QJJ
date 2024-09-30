@@ -9,14 +9,142 @@ class DeviceManagementPage extends StatefulWidget {
   _DeviceManagementPageState createState() => _DeviceManagementPageState();
 }
 
+
 class _DeviceManagementPageState extends State<DeviceManagementPage> {
   List<Map<String, dynamic>> _devices = [];
+  List<Map<String, dynamic>> _filteredDevices = [];
   bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _fetchDevices();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('设备管理'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _fetchDevices,
+          ),
+        ],
+      ),
+      body: _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Column(
+            children: [
+              _buildSearchBar(),
+              Expanded(
+                child: _buildDeviceGrid(),
+              ),
+            ],
+          ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addDevice,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          labelText: '搜索设备',
+          prefixIcon: Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        onChanged: _filterDevices,
+      ),
+    );
+  }
+
+  Widget _buildDeviceGrid() {
+    return GridView.builder(
+      padding: EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.0, // 改为 1.0 或更小的值,如 0.8
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: _filteredDevices.length,
+      itemBuilder: (context, index) {
+        final device = _filteredDevices[index];
+        return _buildDeviceCard(device);
+      },
+    );
+  }
+
+  Widget _buildDeviceCard(Map<String, dynamic> device) {
+    return Card(
+      elevation: 3,
+      child: InkWell(
+        onTap: () => _showDeviceDetails(device),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.devices,
+                size: 40,
+                color: device['isOn'] ? Colors.green : Colors.red,
+              ),
+              SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  device['name'] ?? '未知设备',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  device['macAddress'] ?? '未知MAC地址',
+                  style: TextStyle(fontSize: 12),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                device['isOn'] ? '在线' : '离线',
+                style: TextStyle(
+                  color: device['isOn'] ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _filterDevices(String query) {
+    setState(() {
+      _filteredDevices = _devices.where((device) {
+        final name = device['name']?.toLowerCase() ?? '';
+        final macAddress = device['macAddress']?.toLowerCase() ?? '';
+        return name.contains(query.toLowerCase()) ||
+            macAddress.contains(query.toLowerCase());
+      }).toList();
+    });
   }
 
   Future<void> _fetchDevices() async {
@@ -32,6 +160,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
           final List<dynamic> devicesJson = responseData['content'];
           setState(() {
             _devices = devicesJson.cast<Map<String, dynamic>>();
+            _filteredDevices = _devices; // 初始化 _filteredDevices
             _isLoading = false;
           });
         } else {
@@ -49,52 +178,6 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
         SnackBar(content: Text('加载设备失败: $e')),
       );
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('设备管理'),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: '搜索设备',
-                      suffixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) {
-                      // TODO: 实现设备搜索功能
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _devices.length,
-                    itemBuilder: (context, index) {
-                      final device = _devices[index];
-                      return ListTile(
-                        title: Text(device['name'] ?? '未知设备'),
-                        subtitle: Text(device['macAddress'] ?? '未知MAC地址'),
-                        trailing: Text(device['isOn'] ? '在线' : '离线'),
-                        onTap: () => _showDeviceDetails(device),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addDevice,
-        child: Icon(Icons.add),
-      ),
-    );
   }
 
   void _showDeviceDetails(Map<String, dynamic> device) {
