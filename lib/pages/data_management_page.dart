@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class DataManagementPage extends StatefulWidget {
   const DataManagementPage({Key? key}) : super(key: key);
@@ -125,17 +126,6 @@ class _DataManagementPageState extends State<DataManagementPage> {
     return Column(
       children: [
         _buildDeviceSelector(),
-        Switch(
-          value: _autoRefresh,
-          onChanged: (value) {
-            setState(() {
-              _autoRefresh = value;
-            });
-            // TODO: 实现自动刷新逻辑
-          },
-          activeTrackColor: Colors.lightGreenAccent,
-          activeColor: Colors.green,
-        ),
         Expanded(
           child: _buildDataTable(),
         ),

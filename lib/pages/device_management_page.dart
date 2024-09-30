@@ -118,16 +118,16 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
             child: Text('关闭'),
           ),
           TextButton(
-            onPressed: () => _editDevice(device),
-            child: Text('编辑'),
-          ),
-          TextButton(
             onPressed: () => _deleteDevice(device),
             child: Text('删除'),
           ),
           TextButton(
             onPressed: () => _setThreshold(device),
             child: Text('设置阈值'),
+          ),
+          TextButton(
+            onPressed: () => _toggleDevice(device),
+            child: Text(device['isOn'] == true ? '关闭设备' : '开启设备'),
           ),
         ],
       ),
@@ -259,5 +259,32 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleDevice(Map<String, dynamic> device) async {
+    try {
+      final response = await http.put(
+        Uri.parse('http://10.0.2.2:8080/api/devices/${device['id']}/toggle'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> updatedDevice = json.decode(response.body);
+        setState(() {
+          device['isOn'] = updatedDevice['isOn'];
+        });
+        Navigator.pop(context);
+        _fetchDevices(); // 刷新设备列表
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('设备状态已更新: ${updatedDevice['isOn'] ? '开启' : '关闭'}')),
+        );
+      } else {
+        throw Exception('Failed to toggle device');
+      }
+    } catch (e) {
+      print('Error toggling device: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('切换设备状态失败: $e')),
+      );
+    }
   }
 }

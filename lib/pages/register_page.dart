@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -91,11 +93,34 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _register() {
+  void _register() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: 实现注册逻辑
-      print('用户名: ${_usernameController.text}');
-      print('密码: ${_passwordController.text}');
+      try {
+        final response = await http.post(
+          Uri.parse('http://10.0.2.2:8080/api/users/register'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'username': _usernameController.text,
+            'password': _passwordController.text,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = json.decode(response.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('注册成功,用户ID: ${data['id']}')),
+          );
+          Navigator.pop(context); // 返回登录页面
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('注册失败: ${response.body}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('注册出错: $e')),
+        );
+      }
     }
   }
 

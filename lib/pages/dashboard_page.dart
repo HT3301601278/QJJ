@@ -133,28 +133,10 @@ class _DashboardPageState extends State<DashboardPage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const DataUpdatePage()),
-            );
-          },
-          child: const Text('数据更新'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
               MaterialPageRoute(builder: (context) => const AlarmManagementPage()),
             );
           },
           child: const Text('查看报警'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ReportGenerationPage()),
-            );
-          },
-          child: const Text('报表生成'),
         ),
       ],
     );

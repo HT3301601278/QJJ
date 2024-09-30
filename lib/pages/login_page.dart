@@ -4,6 +4,8 @@ import 'dashboard_page.dart';
 import 'data_update_page.dart';
 import 'alarm_management_page.dart';
 import 'report_generation_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -80,14 +82,36 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: 实现实际的登录逻辑
-      // 假设登录成功，跳转到仪表盘页面
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
-      );
+      try {
+        final response = await http.post(
+          Uri.parse('http://10.0.2.2:8080/api/users/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'username': _usernameController.text,
+            'password': _passwordController.text,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = json.decode(response.body);
+          // 登录成功
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardPage()),
+          );
+        } else {
+          // 登录失败
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('登录失败: 用户名或密码错误')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('登录出错: $e')),
+        );
+      }
     }
   }
 
