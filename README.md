@@ -352,7 +352,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
 ```1:303:lib/pages/data_management_page.dart
 ...
 
-      String url = 'http://192.168.193.98:8080/api/devices/$_selectedDevice/data?page=$_currentPage&size=10&startTime=$formattedStartDate&endTime=$formattedEndDate';
+      String url = 'http://47.116.66.208:8080/api/devices/$_selectedDevice/data?page=$_currentPage&size=10&startTime=$formattedStartDate&endTime=$formattedEndDate';
       print('查询链接: $url');
 
       final response = await http.get(Uri.parse(url));

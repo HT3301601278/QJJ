@@ -134,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
       });
       try {
         final response = await http.post(
-          Uri.parse('http://192.168.193.98:8080/api/users/login'),
+          Uri.parse('http://47.116.66.208:8080/api/users/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'username': _usernameController.text,

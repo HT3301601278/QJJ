@@ -153,7 +153,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://192.168.193.98:8080/api/devices'));
+      final response = await http.get(Uri.parse('http://47.116.66.208:8080/api/devices'));
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(utf8.decode(response.bodyBytes));
         if (responseData.containsKey('content') && responseData['content'] is List) {
@@ -251,7 +251,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
           TextButton(
             onPressed: () async {
               final response = await http.post(
-                Uri.parse('http://192.168.193.98:8080/api/devices'),
+                Uri.parse('http://47.116.66.208:8080/api/devices'),
                 headers: {'Content-Type': 'application/json'},
                 body: json.encode({
                   'name': _nameController.text,
@@ -281,7 +281,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
   }
 
   void _deleteDevice(Map<String, dynamic> device) async {
-    final response = await http.delete(Uri.parse('http://192.168.193.98:8080/api/devices/${device['id']}'));
+    final response = await http.delete(Uri.parse('http://47.116.66.208:8080/api/devices/${device['id']}'));
 
     if (response.statusCode == 200) {
       _fetchDevices();
@@ -320,7 +320,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
               final newThreshold = double.tryParse(_thresholdController.text);
               if (newThreshold != null) {
                 final response = await http.put(
-                  Uri.parse('http://192.168.193.98:8080/api/devices/${device['id']}/threshold?threshold=$newThreshold'),
+                  Uri.parse('http://47.116.66.208:8080/api/devices/${device['id']}/threshold?threshold=$newThreshold'),
                 );
 
                 if (response.statusCode == 200) {
@@ -347,7 +347,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
   Future<void> _toggleDevice(Map<String, dynamic> device) async {
     try {
       final response = await http.put(
-        Uri.parse('http://192.168.193.98:8080/api/devices/${device['id']}/toggle'),
+        Uri.parse('http://47.116.66.208:8080/api/devices/${device['id']}/toggle'),
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {

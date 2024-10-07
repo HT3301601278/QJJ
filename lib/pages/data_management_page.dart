@@ -34,7 +34,7 @@ class _DataManagementPageState extends State<DataManagementPage> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://192.168.193.98:8080/api/devices'));
+      final response = await http.get(Uri.parse('http://47.116.66.208:8080/api/devices'));
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(utf8.decode(response.bodyBytes));
         if (responseData.containsKey('content') && responseData['content'] is List) {
@@ -69,7 +69,7 @@ class _DataManagementPageState extends State<DataManagementPage> {
       String formattedStartDate = "${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')} 00:00:00";
       String formattedEndDate = "${_endDate.year}-${_endDate.month.toString().padLeft(2, '0')}-${_endDate.day.toString().padLeft(2, '0')} 23:59:59";
       
-      String url = 'http://192.168.193.98:8080/api/devices/$_selectedDevice/data?page=$_currentPage&size=10&startTime=$formattedStartDate&endTime=$formattedEndDate';
+      String url = 'http://47.116.66.208:8080/api/devices/$_selectedDevice/data?page=$_currentPage&size=10&startTime=$formattedStartDate&endTime=$formattedEndDate';
       print('查询链接: $url');
 
       final response = await http.get(Uri.parse(url));
